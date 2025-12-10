@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: bluewow-api
+    env: docker
+    dockerfilePath: infra/Dockerfile.backend
+    plan: free
+    autoDeploy: true
+  - type: web
+    name: bluewow-h5
+    env: docker
+    dockerfilePath: infra/Dockerfile.frontend
+    plan: free
+    autoDeploy: true

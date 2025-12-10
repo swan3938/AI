@@ -1,0 +1,17 @@
+services:
+  backend:
+    build:
+      context: ../
+      dockerfile: infra/Dockerfile.backend
+    environment:
+      - JWT_SECRET=change_me
+    ports:
+      - "8088:8088"
+    volumes:
+      - ../backend/app/data/uploads:/app/app/data/uploads
+  frontend:
+    build:
+      context: ../
+      dockerfile: infra/Dockerfile.frontend
+    ports:
+      - "5173:5173"

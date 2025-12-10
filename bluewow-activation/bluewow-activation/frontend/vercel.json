@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/api/bluewow/(.*)", "destination": "https://bluewow-api.onrender.com/api/bluewow/$1" }
+  ]
+}
