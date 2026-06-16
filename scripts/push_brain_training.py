@@ -44,6 +44,35 @@ def split_title_body(path):
     return title, body
 
 
+def clean_for_wechat(body):
+    """把 Markdown 转成微信里清爽的纯文本：去掉 # > * ` 等符号，
+    列表用「· 」，分隔线变空行，避免在微信预览里显示成乱码般的原始符号。"""
+    import re
+
+    out_lines = []
+    for raw in body.splitlines():
+        line = raw.rstrip()
+        # 分隔线 --- *** 直接跳过（用空行替代）
+        if re.fullmatch(r"\s*([-*_])\1{2,}\s*", line):
+            out_lines.append("")
+            continue
+        # 去掉标题井号，保留文字
+        line = re.sub(r"^\s*#{1,6}\s*", "", line)
+        # 去掉引用符号 >
+        line = re.sub(r"^\s*>\s?", "", line)
+        # 列表符号 - / * 开头 → 「· 」
+        line = re.sub(r"^\s*[-*]\s+", "· ", line)
+        # 去掉加粗/斜体/行内代码的标记符号，保留内容
+        line = re.sub(r"\*\*(.+?)\*\*", r"\1", line)
+        line = re.sub(r"`(.+?)`", r"\1", line)
+        out_lines.append(line)
+
+    # 合并多余空行（最多保留一个）
+    text = "\n".join(out_lines)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
 def send(sendkey, title, body):
     url = f"https://sctapi.ftqq.com/{sendkey}.send"
     data = urllib.parse.urlencode({"title": title, "desp": body}).encode("utf-8")
@@ -64,7 +93,8 @@ def main():
     files = load_pool(pool_dir)
     path, idx = pick_file(files)
     title, body = split_title_body(path)
-    footer = "\n\n---\n*由 GitHub Actions 每周自动推送 · 想换方向或加内容，随时跟 Claude 说。*"
+    body = clean_for_wechat(body)
+    footer = "\n\n— — — — —\n每周一自动推送 · 想换方向或加内容，跟 Claude 说一声"
     print(f"本期选中第 {idx} 条：{os.path.basename(path)}")
     send(sendkey, title, body + footer)
 
