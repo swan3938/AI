@@ -1,0 +1,30 @@
+name: 脑力训练每周推送
+
+on:
+  schedule:
+    # UTC 时间每周一 00:30 = 北京时间每周一 08:30
+    - cron: "30 0 * * 1"
+  workflow_dispatch:        # 允许在 Actions 页面手动触发（用于立即测试）
+    inputs:
+      force_index:
+        description: "强制推送第几条（从 0 开始，留空则按周轮换）"
+        required: false
+        default: ""
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 推送脑力训练内容到微信
+        env:
+          SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
+          FORCE_INDEX: ${{ github.event.inputs.force_index }}
+        run: python scripts/push_brain_training.py
