@@ -25,6 +25,7 @@ jobs:
 
       - name: 推送脑力训练内容到微信
         env:
-          SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
+          # 兼容两种命名：优先 SERVERCHAN_SENDKEY，否则回退到 SEND
+          SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY || secrets.SEND }}
           FORCE_INDEX: ${{ github.event.inputs.force_index }}
         run: python scripts/push_brain_training.py
