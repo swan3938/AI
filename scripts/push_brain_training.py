@@ -29,9 +29,9 @@ def pick_file(files):
     if force is not None and force.strip() != "":
         idx = int(force) % len(files)
     else:
-        # 按 ISO 周数轮换，保证每周不同、池子循环复用
-        week = datetime.date.today().isocalendar()[1]
-        idx = week % len(files)
+        # 按一年中的第几天轮换，保证每天不同、池子循环复用
+        day = datetime.date.today().timetuple().tm_yday
+        idx = day % len(files)
     return files[idx], idx
 
 
@@ -94,7 +94,7 @@ def main():
     path, idx = pick_file(files)
     title, body = split_title_body(path)
     body = clean_for_wechat(body)
-    footer = "\n\n— — — — —\n每周一自动推送 · 想换方向或加内容，跟 Claude 说一声"
+    footer = "\n\n— — — — —\n每天自动推送 · 想换方向或加内容，跟 Claude 说一声"
     print(f"本期选中第 {idx} 条：{os.path.basename(path)}")
     send(sendkey, title, body + footer)
 
