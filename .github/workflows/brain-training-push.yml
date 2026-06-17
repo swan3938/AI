@@ -5,9 +5,11 @@ on:
     # UTC 时间每天 00:30 = 北京时间每天 08:30
     - cron: "30 0 * * *"
   workflow_dispatch:        # 允许在 Actions 页面手动触发（用于立即测试）
-
-permissions:
-  contents: write           # 用于把每日生成的内容归档回仓库
+    inputs:
+      force_index:
+        description: "强制推送第几条（从 0 开始，留空则按天轮换）"
+        required: false
+        default: ""
 
 jobs:
   push:
@@ -21,18 +23,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: 生成并推送脑力训练内容
+      - name: 推送脑力训练内容到微信
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           # 兼容两种命名：优先 SERVERCHAN_SENDKEY，否则回退到 SEND
           SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY || secrets.SEND }}
-          GEN_MODEL: claude-sonnet-4-6
-        run: python scripts/daily_push.py
-
-      - name: 归档每日生成的内容
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add brain-training/archive 2>/dev/null || true
-          git commit -m "归档每日脑力训练 $(date -u +%F)" || echo "无新增归档，跳过"
-          git push || echo "无可推送内容"
+          FORCE_INDEX: ${{ github.event.inputs.force_index }}
+        run: python scripts/push_brain_training.py
